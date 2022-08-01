@@ -5,7 +5,7 @@ module.exports.register = async (req, res) => {
     const { name, email, password } = req.body;
     // let user = await User.findOne({ email: email });
     let user = await User.findOne({ email });
-    console.log(user);
+    // console.log(user);
     if (user) {
       return res
         .status(400)
