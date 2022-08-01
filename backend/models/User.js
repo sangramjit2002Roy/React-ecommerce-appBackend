@@ -1,5 +1,6 @@
 const mongoose = require(`mongoose`);
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -22,11 +23,16 @@ const userSchema = new mongoose.Schema({
     select: false, //`select: false` means when we access the data of the user, then except password we can access all the felds.
   },
   posts: [
-    //here is a array of post inside "User"...
+    //ekhaney mainly ekta User err somosto post thakbey...
+    //Ekta User joto gulo post korbey taar account thaka, sei sob post gulo or (more specifically sei somosto post err `id` gulo) eii array tey saved thakbey...
+    //arr eii post err id gulo asbey amader toiri kora (`/models/Post.js`) `Post - mongoose model` thaka.
+    //summary::--
+    //notun Post cerate korar songe songe Post err ekta ` _id: ObjectId('62e2af6186c06b5fbd91be71')` toiri korey debey mongodb...
+    //set ` _id: ObjectId('62e2af6186c06b5fbd91be71')` taa ekhaney store korey rakhbo.
     {
       //and here is the "id" of every post is saved... //now we can access the every post of a/any user by this `posts:[]` array
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Post",
+      type: mongoose.Schema.Types.ObjectId,//ekhaney jee `mongoose.Schema.Types.ObjectId` 
+      ref: "Post",//ekhaney asbey `Post.js` model err id.
     },
   ],
   followers: [
@@ -51,5 +57,13 @@ userSchema.pre("save", async function (next) {
   }
   next();
 });
+
+userSchema.methods.matchPassword = async function (password) {
+  /* eii ` async function (){}` taa return korey True/False */
+  return await bcrypt.compare(password, this.password);
+};
+userSchema.methods.generateToken = function () {
+  return jwt.sign({ _id: this._id }, process.env.JWT_SECRET); // `this._id` holo mongodb dataBse err `_id: ObjectId('62e2af6186c06b5fbd91be71')` <== eta
+};
 
 module.exports = mongoose.model("User", userSchema);

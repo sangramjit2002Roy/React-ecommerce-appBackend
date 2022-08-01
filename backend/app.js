@@ -1,4 +1,5 @@
 const express = require("express");
+const cookieParser = require("cookie-parser");
 
 const app = express();
 
@@ -9,6 +10,7 @@ if (process.env.NODE_ENV !== "production") {
 //Using middkewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser()); //go to `/middlewares/auth.js` ""line no.7"" to see the Use of `cookieParser`
 
 // Importing Routes
 const createPostRouter = require("./routes/post");
