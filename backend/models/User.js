@@ -31,11 +31,17 @@ const userSchema = new mongoose.Schema({
     //set ` _id: ObjectId('62e2af6186c06b5fbd91be71')` taa ekhaney store korey rakhbo.
     {
       //and here is the "id" of every post is saved... //now we can access the every post of a/any user by this `posts:[]` array
-      type: mongoose.Schema.Types.ObjectId,//ekhaney jee `mongoose.Schema.Types.ObjectId` 
-      ref: "Post",//ekhaney asbey `Post.js` model err id.
+      type: mongoose.Schema.Types.ObjectId, //ekhaney jee `mongoose.Schema.Types.ObjectId`
+      ref: "Post", //ekhaney asbey `Post.js` model err id.
     },
   ],
   followers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  following: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -59,7 +65,7 @@ userSchema.pre("save", async function (next) {
 });
 
 userSchema.methods.matchPassword = async function (password) {
-  /* eii ` async function (){}` taa return korey True/False */
+  /* eii `async function (){}` taa return korey True/False */
   return await bcrypt.compare(password, this.password);
 };
 userSchema.methods.generateToken = function () {

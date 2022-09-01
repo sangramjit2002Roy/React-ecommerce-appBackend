@@ -18,13 +18,11 @@ const postSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  like: [
+  likes: [
     {
       //inside `like:[]` array, the objectId of that `user` will be saved, who likes my post.
-      user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User", //the 'id' come into the user that will be the `id` of 'User from User.js'
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", //the 'id' come into the user that will be the `id` of 'User from User.js'
     },
   ],
   comments: [
