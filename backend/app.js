@@ -4,7 +4,11 @@ const cookieParser = require("cookie-parser");
 const app = express();
 
 if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config({ path: "backend/config/config.env" });
+  /*
+  // .env file gongogol korley erom korey thik kortey hoy
+  console.log(`require("dotenv").config({ path: "backend/config/config.env" }): `,require("dotenv").config({ path: require('find-config')("backend/config/config.env") }));
+  */
+  require("dotenv").config({ path: require('find-config')('backend/config/config.env') });
 }
 
 //Using middkewares

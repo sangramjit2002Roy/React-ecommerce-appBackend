@@ -1,6 +1,7 @@
 const mongoose = require(`mongoose`);
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto")
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -47,6 +48,8 @@ const userSchema = new mongoose.Schema({
       ref: "User",
     },
   ],
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
 });
 
 userSchema.pre("save", async function (next) {
@@ -70,6 +73,18 @@ userSchema.methods.matchPassword = async function (password) {
 };
 userSchema.methods.generateToken = function () {
   return jwt.sign({ _id: this._id }, process.env.JWT_SECRET); // `this._id` holo mongodb dataBse err `_id: ObjectId('62e2af6186c06b5fbd91be71')` <== eta
+};
+
+userSchema.methods.getResetPasswordToken = function () {
+  const resetToken = crypto.randomBytes(20).toString("hex");
+
+  this.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10mins * 60sec *1000 miliSecond = Total 10mins err jonno token valid thakbey
+
+  return resetToken;
 };
 
 module.exports = mongoose.model("User", userSchema);

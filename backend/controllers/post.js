@@ -303,7 +303,6 @@ module.exports.logout = (req, res) => {
   }
 };
 
-
 exports.updateCaption = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -335,3 +334,113 @@ exports.updateCaption = async (req, res) => {
     });
   }
 };
+
+exports.commentOnPost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) {
+      return res.status(400).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+    let commentIndex = -1;
+    //Checking if comment already exists
+    post.comments.forEach((item, index) => {
+      if (item.user.toString() === req.user._id.toString()) {
+        commentIndex = index;
+      }
+    });
+    /**
+     * First time jodi keu comment korey taholey else block taa cholbey(simply) sei comment taa add hoye jabey, But but but .....
+     * 2nd time jodi sei_person taai comment kortey chai taholey *if(){}* block taa cholbey and oii same person err same comment taai update hoye jabey.
+     */
+    if (commentIndex !== -1) {
+      post.comments[commentIndex].comment = req.body.comment;
+      await post.save();
+      return res.status(200).json({
+        success: true,
+        message: "Comment Updated",
+      });
+    } else {
+      post.comments.push({
+        user: req.user._id,
+        comment: req.body.comment,
+      });
+      await post.save();
+      return res.status(200).json({
+        success: true,
+        message: "Comment Added",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Line no. 379 from `\\controllers\\post.js`" + error.message,
+    });
+  }
+};
+
+exports.deleteCommentOnPost = async (req, res) => {
+  /**
+   * ekhaney 2to testCase achey
+   * 1) Jee user login achey Taar ee post - tahole see chailey somosto comment delete kortey parbey irrespective of comment taa kon user koreyChey
+   * 2) Jee user login achey Taar post noy - taholey see onno user err post delete kortey parbey naa **But** nijey rr comment taa only delete kortey parbey.
+   */
+  try {
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
+    // Checking If owner wants to delete
+    // test case - 1
+    // ownee err ee jodi post hoy, see jaar iccha comment delete kortey parbey
+    if (post.owner.toString() === req.user._id.toString()) {
+      if (req.body.commentId === undefined) {
+        return res.status(400).json({
+          success: false,
+          message: "Comment Id is required",
+        });
+      }
+
+      post.comments.forEach((item, index) => {
+        if (item._id.toString() === req.body.commentId.toString()) {
+          return post.comments.splice(index, 1);
+        }
+      });
+
+      await post.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Selected Comment has deleted",
+      });
+    } else {
+      // test case - 2
+      // jee login korey request taa send korchey, taar post jodi naa hoy - taholey see only nijer comment taai delete kortey parbey
+      post.comments.forEach((item, index) => {
+        if (item.user.toString() === req.user._id.toString()) {
+          return post.comments.splice(index, 1);
+        }
+      });
+
+      await post.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Your Comment has deleted",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
